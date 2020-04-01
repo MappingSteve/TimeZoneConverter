@@ -11,10 +11,9 @@ namespace TimeZoneConverter
     {
         public static void Populate(IDictionary<string, string> ianaMap, IDictionary<string, string> windowsMap, IDictionary<string, string> railsMap, IDictionary<string, IList<string>> inverseRailsMap)
         {
-            // tmstest ".ToList()": During debugging, easier to refer to a given item by index.
-            var mapping = GetEmbeddedData("TimeZoneConverter.Data.Mapping.csv.gz").ToList();
-            var aliases = GetEmbeddedData("TimeZoneConverter.Data.Aliases.csv.gz").ToList();
-            var railsMapping = GetEmbeddedData("TimeZoneConverter.Data.RailsMapping.csv.gz").ToList();
+            var mapping = GetEmbeddedData("TimeZoneConverter.Data.Mapping.csv.gz");
+            var aliases = GetEmbeddedData("TimeZoneConverter.Data.Aliases.csv.gz");
+            var railsMapping = GetEmbeddedData("TimeZoneConverter.Data.RailsMapping.csv.gz");
 
             var links = new Dictionary<string, string>();
             foreach (var link in aliases)
