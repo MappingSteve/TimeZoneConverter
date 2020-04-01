@@ -9,6 +9,10 @@ namespace TimeZoneConverter.DataBuilder
 {
     public class Program
     {
+        /// <summary>
+        /// REQUIRES Extension method List<T>.AddIfMissing; see "static class ListExtensions" at end of file.
+        /// </summary>
+        /// <param name="args"></param>
         public static void Main(string[] args)
         {
             var tempDir = Downloader.GetTempDir();
@@ -40,7 +44,7 @@ namespace TimeZoneConverter.DataBuilder
                 }
 
                 // Extract mappings and aliases from CLDR
-                var mapping = DataExtractor.LoadMapping(cldrPath, links);
+                List<string> mapping = DataExtractor.LoadMapping(cldrPath, links);
                 var aliases = DataExtractor.LoadAliases(cldrPath, links);
 
                 // Extract Rails mappings and aliases from Rails data
@@ -50,42 +54,42 @@ namespace TimeZoneConverter.DataBuilder
 
                 // Asia/Qyzylorda => Qyzylorda Standard Time
                 mapping.Remove("West Asia Standard Time,KZ,Asia/Oral Asia/Aqtau Asia/Aqtobe Asia/Atyrau Asia/Qyzylorda");
-                mapping.Add("West Asia Standard Time,KZ,Asia/Oral Asia/Aqtau Asia/Aqtobe Asia/Atyrau");
-                mapping.Add("Qyzylorda Standard Time,001,Asia/Qyzylorda");
-                mapping.Add("Qyzylorda Standard Time,KZ,Asia/Qyzylorda");
+                mapping.AddIfMissing("West Asia Standard Time,KZ,Asia/Oral Asia/Aqtau Asia/Aqtobe Asia/Atyrau");
+                mapping.AddIfMissing("Qyzylorda Standard Time,001,Asia/Qyzylorda");
+                mapping.AddIfMissing("Qyzylorda Standard Time,KZ,Asia/Qyzylorda");
 
                 // Europe/Volgograd => Volgograd Standard Time
                 mapping.Remove("Russian Standard Time,RU,Europe/Moscow Europe/Kirov Europe/Volgograd");
-                mapping.Add("Russian Standard Time,RU,Europe/Moscow Europe/Kirov");
-                mapping.Add("Volgograd Standard Time,001,Europe/Volgograd");
-                mapping.Add("Volgograd Standard Time,RU,Europe/Volgograd");
+                mapping.AddIfMissing("Russian Standard Time,RU,Europe/Moscow Europe/Kirov");
+                mapping.AddIfMissing("Volgograd Standard Time,001,Europe/Volgograd");
+                mapping.AddIfMissing("Volgograd Standard Time,RU,Europe/Volgograd");
 
                 // America/Metlakatla => Alaskan Standard Time
                 mapping.Remove("Alaskan Standard Time,US,America/Anchorage America/Juneau America/Nome America/Sitka America/Yakutat");
-                mapping.Add("Alaskan Standard Time,US,America/Anchorage America/Juneau America/Metlakatla America/Nome America/Sitka America/Yakutat");
+                mapping.AddIfMissing("Alaskan Standard Time,US,America/Anchorage America/Juneau America/Metlakatla America/Nome America/Sitka America/Yakutat");
                 mapping.Remove("Pacific Standard Time,US,America/Los_Angeles America/Metlakatla");
-                mapping.Add("Pacific Standard Time,US,America/Los_Angeles");
+                mapping.AddIfMissing("Pacific Standard Time,US,America/Los_Angeles");
 
                 // Add mappings for ISO country codes that aren't used in CLDR
-                mapping.Add("Romance Standard Time,EA,Africa/Ceuta");
-                mapping.Add("GMT Standard Time,IC,Atlantic/Canary");
-                mapping.Add("Greenwich Standard Time,AC,Atlantic/St_Helena");
-                mapping.Add("Greenwich Standard Time,TA,Atlantic/St_Helena");
-                mapping.Add("Central Europe Standard Time,XK,Europe/Belgrade");
-                mapping.Add("Central Asia Standard Time,DG,Indian/Chagos");
+                mapping.AddIfMissing("Romance Standard Time,EA,Africa/Ceuta");
+                mapping.AddIfMissing("GMT Standard Time,IC,Atlantic/Canary");
+                mapping.AddIfMissing("Greenwich Standard Time,AC,Atlantic/St_Helena");
+                mapping.AddIfMissing("Greenwich Standard Time,TA,Atlantic/St_Helena");
+                mapping.AddIfMissing("Central Europe Standard Time,XK,Europe/Belgrade");
+                mapping.AddIfMissing("Central Asia Standard Time,DG,Indian/Chagos");
 
                 // Add a few aliases for IANA abbreviated zones not tracked by CLDR
-                aliases.Add("Europe/Paris,CET");
-                aliases.Add("Europe/Bucharest,EET");
-                aliases.Add("Europe/Berlin,MET");
-                aliases.Add("Atlantic/Canary,WET");
+                aliases.AddIfMissing("Europe/Paris,CET");
+                aliases.AddIfMissing("Europe/Bucharest,EET");
+                aliases.AddIfMissing("Europe/Berlin,MET");
+                aliases.AddIfMissing("Atlantic/Canary,WET");
 
                 mapping.Sort(StringComparer.Ordinal);
                 aliases.Sort(StringComparer.Ordinal);
 
                 // Support mapping deprecated Windows zones, but after sorting so they are not used as primary results
-                mapping.Add("Kamchatka Standard Time,001,Asia/Kamchatka");
-                mapping.Add("Mid-Atlantic Standard Time,001,Etc/GMT+2");
+                mapping.AddIfMissing("Kamchatka Standard Time,001,Asia/Kamchatka");
+                mapping.AddIfMissing("Mid-Atlantic Standard Time,001,Etc/GMT+2");
 
                 // Write to source files in the main library
                 var projectPath = Path.GetFullPath(".");
@@ -112,6 +116,17 @@ namespace TimeZoneConverter.DataBuilder
                 foreach (var line in lines)
                     writer.WriteLine(line);
             }
+        }
+    }
+
+
+
+    internal static class ListExtensions
+    {
+        public static void AddIfMissing<T>(this List<T> list, T item)
+        {
+            if (!list.Contains(item))
+                list.Add(item);
         }
     }
 }
